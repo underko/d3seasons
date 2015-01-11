@@ -69,7 +69,7 @@
         return $name_list;
     }
 
-    function get_leaderboard_chars($realm, $account_list) {
+    function get_leaderboard_chars($realm, $game_mode, $season, $class, $account_list) {
         $max_level = 70;
         $opts = array('http'=>array('method'=>"GET",'timeout' => 600));
         $context = stream_context_create($opts);
@@ -77,7 +77,7 @@
         $size = count($account_list);
         $char_array = array();
 
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < $size; $i++) {
             $link  = "http://". $realm .".battle.net/api/d3/profile/". $account_list[$i] ."/";
             $account = file_get_contents($link, false, $context);
             $account = json_decode($account, true);
@@ -89,51 +89,75 @@
             $char_array[$account_list[$i]]["profile_link"] = $link;
             $char_array[$account_list[$i]]["heroes"] = array();
 
+            $n = 0;
+
             for ($j = 0; $j < $hero_count; $j ++) {
 
                 $hero_level = $account['heroes'][$j]['level'];
+                $hero_class = $account['heroes'][$j]['class'];
+                $hero_season = $account['heroes'][$j]['seasonal'];
+                $hero_mode = $account['heroes'][$j]['hardcore'];
+                $hero_dead = $account['heroes'][$j]['dead'];
 
-                if ($hero_level == $max_level) {
+                echo "l: $hero_level, c: $hero_class, s: $hero_season, m: $hero_mode, d: $hero_dead \n<br>";
+
+                if (
+                    $hero_level == $max_level &&
+                    $hero_class == $class &&
+                    $hero_season == $season &&
+                    $hero_mode == $game_mode &&
+                    $hero_dead == false
+                   )
+                {
                     $hero_name = $account['heroes'][$j]['name'];
                     $hero_id = $account['heroes'][$j]['id'];
 
-                    $char_array[$account_list[$i]]["heroes"][$j] = array();
-                    $char_array[$account_list[$i]]["heroes"][$j]['name'] = $hero_name;
-                    $char_array[$account_list[$i]]["heroes"][$j]['id'] = $hero_id;
-                    $char_array[$account_list[$i]]["heroes"][$j]['level'] = $hero_level;
-                    $char_array[$account_list[$i]]["heroes"][$j]['link'] = $link ."hero/". $hero_id;
+                    $char_array[$account_list[$i]]["heroes"][$n] = array();
+                    $char_array[$account_list[$i]]["heroes"][$n]['name'] = $hero_name;
+                    $char_array[$account_list[$i]]["heroes"][$n]['id'] = $hero_id;
+                    $char_array[$account_list[$i]]["heroes"][$n]['level'] = $hero_level;
+                    $char_array[$account_list[$i]]["heroes"][$n]['link'] = $link ."hero/". $hero_id;
+
+                    $n++;
                 }
             }
 
             $top_hero = get_top_hero($char_array[$account_list[$i]]["heroes"]);
             $char_array[$account_list[$i]]["top_hero"] = $top_hero;
+            file_put_contents('dump.log', '*', FILE_APPEND | LOCK_EX);
         }
-
+        file_put_contents('dump.log', "\n", FILE_APPEND | LOCK_EX);
         return $char_array;
     }
 
     function get_top_hero($hero_array) {
-        $opts = array('http'=>array('method'=>"GET",'timeout' => 600));
-        $context = stream_context_create($opts);
+
+        $top_hero = array();
 
         echo "<pre>";
         print_r($hero_array);
         echo "</pre>";
 
-        $top_hero = array();
-        $size = count($hero_array);
-        $dmg = 0; //$thg = 0;
+        if (count($hero_array) == 1) {
+            echo "1 element array\n";
+            $top_hero['id'] = $hero_array[0]['id'];
+            return $top_hero;
+        }
 
-        for ($i = 0; $i < $size; $i++) {
-            $hero_link = $hero_array[$i]['link'];
+        $opts = array('http'=>array('method'=>"GET",'timeout' => 600));
+        $context = stream_context_create($opts);
 
-            $hero = file_get_contents($hero_link, false, $context);
-            $hero = json_decode($hero, true);
+        $dmg = 0;
 
-            $act_dmg = $hero['stats']['damage'];
+        foreach ($hero_array as $hero) {
+            $hero_link = $hero['link'];
+
+            $hero_file = file_get_contents($hero_link, false, $context);
+            $hero_file = json_decode($hero_file, true);
+
+            $act_dmg = $hero_file['stats']['damage'];
             if ($act_dmg > $dmg) {
                 $top_hero['id'] = $hero['id'];
-                $top_hero['name'] = $hero['name'];
             }
         }
 
@@ -141,8 +165,8 @@
     }
 
     function test() {
-        $test = get_name_array("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-crusader");
-        $charz = get_leaderboard_chars('eu', $test);
+        $test = get_name_array("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-crusader");
+        $charz = get_leaderboard_chars('eu', true, true, 'crusader', $test);
 
         echo "<pre>";
         print_r($charz);
