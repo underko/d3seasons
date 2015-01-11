@@ -1,4 +1,8 @@
 <?php
+
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+
     function get_stat_json($link)
     {
         $opts = array('http'=>array('method'=>"GET",'timeout' => 60));
@@ -65,46 +69,86 @@
         return $name_list;
     }
 
-    function test() {
-        $test = get_name_array("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-crusader");
-
-        echo var_dump($test);
-        
-        $opts = array('http'=>array('method'=>"GET",'timeout' => 60));
-        $context = stream_context_create($opts);
-
-        $f = file_get_contents("http://eu.battle.net/api/d3/profile/".$test[4]."/", false, $context);
-
-        echo var_dump($f);
-
-        $f = file_get_contents("http://eu.battle.net/api/d3/profile/".$test[0]."/", false, $context);
-
-        echo var_dump($f);
-
-        $charz = get_leaderboard_chars('eu', $test);
-
-        echo var_dump($charz);
-    }
-
     function get_leaderboard_chars($realm, $account_list) {
-        $opts = array('http'=>array('method'=>"GET",'timeout' => 60));
+        $max_level = 70;
+        $opts = array('http'=>array('method'=>"GET",'timeout' => 600));
         $context = stream_context_create($opts);
         
         $size = count($account_list);
         $char_array = array();
 
-        for ($i = 0; $i < $size; $i++) { 
-            $account = file_get_contents("http://". $realm .".battle.net/api/d3/profile/". $account_list[$i] ."/", false, $context);
+        for ($i = 0; $i < 5; $i++) {
+            $link  = "http://". $realm .".battle.net/api/d3/profile/". $account_list[$i] ."/";
+            $account = file_get_contents($link, false, $context);
+            $account = json_decode($account, true);
 
-            $heroes = $account['heroes'];
-            $char_array[$account['battleTag']] = array();
+            $hero_count = count($account['heroes']);
 
-            for ($i = 0; $i < count($heroes); $i++) { 
-                $char_array[$account['battleTag']][$heroes[$i]['id']] = $heroes[$i]['name'];
+            $char_array[$account_list[$i]] = array();
+            $char_array[$account_list[$i]]["rank"] = $i + 1;
+            $char_array[$account_list[$i]]["profile_link"] = $link;
+            $char_array[$account_list[$i]]["heroes"] = array();
+
+            for ($j = 0; $j < $hero_count; $j ++) {
+
+                $hero_level = $account['heroes'][$j]['level'];
+
+                if ($hero_level == $max_level) {
+                    $hero_name = $account['heroes'][$j]['name'];
+                    $hero_id = $account['heroes'][$j]['id'];
+
+                    $char_array[$account_list[$i]]["heroes"][$j] = array();
+                    $char_array[$account_list[$i]]["heroes"][$j]['name'] = $hero_name;
+                    $char_array[$account_list[$i]]["heroes"][$j]['id'] = $hero_id;
+                    $char_array[$account_list[$i]]["heroes"][$j]['level'] = $hero_level;
+                    $char_array[$account_list[$i]]["heroes"][$j]['link'] = $link ."hero/". $hero_id;
+                }
+            }
+
+            $top_hero = get_top_hero($char_array[$account_list[$i]]["heroes"]);
+            $char_array[$account_list[$i]]["top_hero"] = $top_hero;
+        }
+
+        return $char_array;
+    }
+
+    function get_top_hero($hero_array) {
+        $opts = array('http'=>array('method'=>"GET",'timeout' => 600));
+        $context = stream_context_create($opts);
+
+        echo "<pre>";
+        print_r($hero_array);
+        echo "</pre>";
+
+        $top_hero = array();
+        $size = count($hero_array);
+        $dmg = 0; //$thg = 0;
+
+        for ($i = 0; $i < $size; $i++) {
+            $hero_link = $hero_array[$i]['link'];
+
+            $hero = file_get_contents($hero_link, false, $context);
+            $hero = json_decode($hero, true);
+
+            $act_dmg = $hero['stats']['damage'];
+            if ($act_dmg > $dmg) {
+                $top_hero['id'] = $hero['id'];
+                $top_hero['name'] = $hero['name'];
             }
         }
 
-        return $char_array
+        return $top_hero;
+    }
+
+    function test() {
+        $test = get_name_array("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-crusader");
+        $charz = get_leaderboard_chars('eu', $test);
+
+        echo "<pre>";
+        print_r($charz);
+        echo "</pre>";
+
+        return;
     }
 
     test();
