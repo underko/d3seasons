@@ -83,11 +83,13 @@
         $rank = 0;
 
         foreach ($account_list as $account) {
+            //if ($rank > 10) break;
+
             $link = "http://" . $realm . ".battle.net/api/d3/profile/" . $account . "/";
             $account_file = file_get_contents($link, false, $context);
             $account_file = json_decode($account_file, true);
 
-            $hero_count = count($account_file['heroes']);
+            //$hero_count = count($account_file['heroes']);
 
             $char_array[$account] = array();
             $char_array[$account]["rank"] = ++$rank;
@@ -133,6 +135,29 @@
 
         file_put_contents('dump.log', "\n", FILE_APPEND | LOCK_EX);
         return $char_array;
+    }
+
+    function test() {
+        $f = file_get_contents('skill_active.out');
+        $f = json_decode($f, true);
+
+        echo "active: <br><pre>";
+        print_r($f);
+        echo "<pre>";
+
+        $f = file_get_contents('skill_passive.out');
+        $f = json_decode($f, true);
+
+        echo "passive: <br><pre>";
+        print_r($f);
+        echo "<pre>";
+
+        $f = file_get_contents('item.out');
+        $f = json_decode($f, true);
+
+        echo "items: <br><pre>";
+        print_r($f);
+        echo "<pre>";
     }
 
 ?>

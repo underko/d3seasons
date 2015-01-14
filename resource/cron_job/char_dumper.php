@@ -27,7 +27,6 @@
         file_put_contents('dump.log', "");
         run_script();
         file_put_contents($var_file, "0");
-        file_put_contents($log_file, "$date: Script finished succesfuly.\n", FILE_APPEND | LOCK_EX);
         exit(0);
     }
     else {
@@ -39,7 +38,6 @@
 
     /* FUNCTIONS */
     function run_script() {
-        echo "script running ... <br>";
         $test = get_name_array("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-crusader");
         $charz = get_leaderboard_chars('eu', true, true, 'crusader', $test);
 
@@ -47,7 +45,7 @@
         $log_file = '../logs/chars.log';
         $date = gmdate("d.m.Y H:i:s", time());
 
-        file_put_contents($dump_file, json_encode($charz), FILE_APPEND | LOCK_EX);
+        file_put_contents($dump_file, json_encode($charz));
         file_put_contents($log_file, "$date: Script finished succesfuly.\n", FILE_APPEND | LOCK_EX);
 
         return;
@@ -57,7 +55,6 @@
         $top_hero = array();
 
         if (count($hero_array) == 1) {
-            echo "1 element array\n";
             $top_hero['id'] = $hero_array[0]['id'];
             $top_hero['link'] = $hero_array[0]['link'];
             return $top_hero;
