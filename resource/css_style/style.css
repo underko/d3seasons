@@ -261,3 +261,13 @@ th:hover, td:hover {
 	margin: 10px;
     margin-right: 0px;
 }
+
+#season_select {
+    width: 150px;
+    overflow: hidden;
+}
+
+#season_div {
+	margin-top: 20px;
+	margin-bottom: 20px;
+}

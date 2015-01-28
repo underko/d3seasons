@@ -1,5 +1,5 @@
 <?php
-    include "../season_01/hc_season/get_crusader_histogram.php";
+    include "../season_01/eu/hc_season/get_crusader_histogram.php";
 
     $file = get_json();
     $histogram = $file['histogram'];
