@@ -262,12 +262,18 @@ th:hover, td:hover {
     margin-right: 0px;
 }
 
-#season_select {
-    width: 150px;
-    overflow: hidden;
-}
-
 #season_div {
+	width: 100%;
+	color: #E5E4E2;
 	margin-top: 20px;
 	margin-bottom: 20px;
+}
+
+#select_season,
+#select_realm,
+#select_game_mode,
+#select_class {
+	width: 200px;
+	margin: 5px;
+	background-color: #E5E4E2;
 }
