@@ -28,7 +28,7 @@
                     }
                 ?>
             ]);
-
+            
             var options = {
                 chartArea: {
                     top: '5%',
