@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 	<head>
 		<meta charset="UTF-8" />
@@ -34,7 +34,7 @@
                 else if (season == "02")
                 { document.getElementById("frame").src = "season_page/season_02.php"; return; }
 
-                var file_path="../season_"+season+"/season_"+season+"_data/"+realm+"/"+game_mode+"/"+ch_class+"/skill_active.out";
+                var file_path="../season_"+season+"/season_"+season+"_data/"+realm+"/"+game_mode+"/"+ch_class+"/statistics.php";
                 console.log("path: "+ file_path);
 
                 document.getElementById("frame").src = file_path;
