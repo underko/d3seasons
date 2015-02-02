@@ -18,7 +18,7 @@
 
                     uasort($file, function($a, $b) { return $a['count'] > $b['count'] ? -1 : 1; });
                     //echo "<pre>";
-                    //print_r($file);
+                    //print_r($file); 
 
                     foreach ($file as $skill => $data)
                     {
@@ -28,7 +28,7 @@
                     }
                 ?>
             ]);
-            
+
             var options = {
                 chartArea: {
                     top: '5%',

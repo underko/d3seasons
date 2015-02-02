@@ -11,6 +11,7 @@
 <script type="text/javascript">
 
     google.load('visualization', '1.0', {'packages':['corechart', 'table']});
+
     google.setOnLoadCallback(drawChart_PlayTime);
 
     function drawChart_PlayTime() {
