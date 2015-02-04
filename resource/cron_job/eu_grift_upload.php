@@ -1,4 +1,4 @@
-;lkjhgfdsa  <?php
+<?php
     /* check if this file is already open */
     if (file_get_contents("../globals/global-eu.var") == "1") {
         echo "EU script already running -> Skipping this one.<br>";
@@ -13,7 +13,6 @@
 
         file_put_contents("../globals/global-eu.var", "1");
 
-        echo "Variable set to 1. Script running in the background NOW.<br>";
         script_run_eu();
     }
 
@@ -89,12 +88,12 @@
 
         $file = "../../season_01/eu/hc_season/";
 
-        file_put_contents($file . "barbarian/" . $date . "_barbarian", json_encode($tmp_b_hc_s));
-        file_put_contents($file . "crusader/" . $date . "_crusader", json_encode($tmp_c_hc_s));
-        file_put_contents($file . "dh/" . $date . "_dh", json_encode($tmp_d_hc_s));
-        file_put_contents($file . "monk/" . $date . "_monk", json_encode($tmp_m_hc_s));
-        file_put_contents($file . "wd/" . $date . "_wd", json_encode($tmp_wd_hc_s));
-        file_put_contents($file . "wizard/" . $date . "_wizard", json_encode($tmp_wz_hc_s));
+        file_put_contents($file . "barbarian/barbarian.data", json_encode($tmp_b_hc_s));
+        file_put_contents($file . "crusader/crusader.data",   json_encode($tmp_c_hc_s));
+        file_put_contents($file . "dh/dh.data",               json_encode($tmp_d_hc_s));
+        file_put_contents($file . "monk/monk.data",           json_encode($tmp_m_hc_s));
+        file_put_contents($file . "wd/wd.data",               json_encode($tmp_wd_hc_s));
+        file_put_contents($file . "wizard/wizard.data",       json_encode($tmp_wz_hc_s));
 
         $log = "        - hardcore season uploaded. Errors: " . $err_value . "\n";
         echo $log . "<br>";
@@ -160,12 +159,12 @@
 
         $file = "../../season_01/eu/hc/";
 
-        file_put_contents($file . "barbarian/" . $date . "_barbarian", json_encode($tmp_b_hc_ns));
-        file_put_contents($file . "crusader/" . $date . "_crusader", json_encode($tmp_c_hc_ns));
-        file_put_contents($file . "dh/" . $date . "_dh", json_encode($tmp_d_hc_ns));
-        file_put_contents($file . "monk/" . $date . "_monk", json_encode($tmp_m_hc_ns));
-        file_put_contents($file . "wd/" . $date . "_wd", json_encode($tmp_wd_hc_ns));
-        file_put_contents($file . "wizard/" . $date . "_wizard", json_encode($tmp_wz_hc_ns));
+        file_put_contents($file . "barbarian/barbarian.data",   json_encode($tmp_b_hc_ns));
+        file_put_contents($file . "crusader/crusader.data",     json_encode($tmp_c_hc_ns));
+        file_put_contents($file . "dh/dh.data",                 json_encode($tmp_d_hc_ns));
+        file_put_contents($file . "monk/monk.data",             json_encode($tmp_m_hc_ns));
+        file_put_contents($file . "wd/wd.data",                 json_encode($tmp_wd_hc_ns));
+        file_put_contents($file . "wizard/wizard.data",         json_encode($tmp_wz_hc_ns));
 
         $log = "        - hardcore non-season uploaded. Errors: " . $err_value . "\n";
         echo $log . "<br>";
@@ -231,12 +230,12 @@
 
         $file = "../../season_01/eu/sc_season/";
 
-        file_put_contents($file . "barbarian/" . $date . "_barbarian", json_encode($tmp_b_sc_s));
-        file_put_contents($file . "crusader/" . $date . "_crusader", json_encode($tmp_c_sc_s));
-        file_put_contents($file . "dh/" . $date . "_dh", json_encode($tmp_d_sc_s));
-        file_put_contents($file . "monk/" . $date . "_monk", json_encode($tmp_m_sc_s));
-        file_put_contents($file . "wd/" . $date . "_wd", json_encode($tmp_wd_sc_s));
-        file_put_contents($file . "wizard/" . $date . "_wizard", json_encode($tmp_wz_sc_s));
+        file_put_contents($file . "barbarian/barbarian.data",   json_encode($tmp_b_sc_s));
+        file_put_contents($file . "crusader/crusader.data",     json_encode($tmp_c_sc_s));
+        file_put_contents($file . "dh/dh.data",                 json_encode($tmp_d_sc_s));
+        file_put_contents($file . "monk/monk.data",             json_encode($tmp_m_sc_s));
+        file_put_contents($file . "wd/wd.data",                 json_encode($tmp_wd_sc_s));
+        file_put_contents($file . "wizard/wizard.data",         json_encode($tmp_wz_sc_s));
 
         $log = "        - softcore season uploaded. Errors: " . $err_value . "\n";
         echo $log . "<br>";
@@ -302,12 +301,12 @@
 
         $file = "../../season_01/eu/sc/";
 
-        file_put_contents($file . "barbarian/" . $date . "_barbarian", json_encode($tmp_b_sc_ns));
-        file_put_contents($file . "crusader/" . $date . "_crusader", json_encode($tmp_c_sc_ns));
-        file_put_contents($file . "dh/" . $date . "_dh", json_encode($tmp_d_sc_ns));
-        file_put_contents($file . "monk/" . $date . "_monk", json_encode($tmp_m_sc_ns));
-        file_put_contents($file . "wd/" . $date . "_wd", json_encode($tmp_wd_sc_ns));
-        file_put_contents($file . "wizard/" . $date . "_wizard", json_encode($tmp_wz_sc_ns));
+        file_put_contents($file . "barbarian/barbarian.data",   json_encode($tmp_b_sc_ns));
+        file_put_contents($file . "crusader/crusader.data",     json_encode($tmp_c_sc_ns));
+        file_put_contents($file . "dh/dh.data",                 json_encode($tmp_d_sc_ns));
+        file_put_contents($file . "monk/monk.data",             json_encode($tmp_m_sc_ns));
+        file_put_contents($file . "wd/wd.data",                 json_encode($tmp_wd_sc_ns));
+        file_put_contents($file . "wizard/wizard.data",         json_encode($tmp_wz_sc_ns));
 
         $log = "        - softcore non-season uploaded. Errors: " . $err_value . "\n";
         echo $log . "<br>";
