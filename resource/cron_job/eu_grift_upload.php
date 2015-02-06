@@ -1,16 +1,14 @@
 <?php
     /* check if this file is already open */
-    if (file_get_contents("../globals/global-eu.var") == "1") {
-        echo "EU script already running -> Skipping this one.<br>";
-    }
-    else {
-        echo "First run of the EU script -> Changing global variable.<br>";
-
+    if (file_get_contents("../globals/global-eu.var") != "1") {
+        
         /* set max execution time to 5m due to script nature */
         ini_set('max_execution_time', 300);
         ini_set("log_errors", 1);
         ini_set("error_log", "../logs/eu_upload.log");
 
+        //require "leaderboard_parser.php";
+        //require "logger.php";
         file_put_contents("../globals/global-eu.var", "1");
 
         script_run_eu();
@@ -18,54 +16,50 @@
 
     function script_run_eu()
     {
+        world_upload_log("   Uploading EU statistics ...\n");
         $date = time();
-        $log_file = "../logs/log";
-        $err_value = 0;
-        $log = gmdate("d.m.Y H:i:s", $date);
-
-        /* parsing rankings */
-        $log .= "   Uploading EU statistics ...\n";
-        echo $log . "<br>";
-        file_put_contents($log_file, $log, FILE_APPEND | LOCK_EX);
+        $total_err_value = 0;
 
         /* UPLOAD SOLO DATA */
         /* hc season */
+        $err_value = 0;
         $tmp_b_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-barbarian"), true);
         while ($tmp_b_hc_s['top_level'] == 0 || $tmp_b_hc_s['avg_level'] == 0 || $tmp_b_hc_s['end_level'] == 0) {
             $tmp_b_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-barbarian"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
 
+        $err_value = 0;
         $tmp_c_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-crusader"), true);
         while ($tmp_c_hc_s['top_level'] == 0 || $tmp_c_hc_s['avg_level'] == 0 || $tmp_c_hc_s['end_level'] == 0) {
             $tmp_c_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-crusader"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_d_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-dh"), true);
         while ($tmp_d_hc_s['top_level'] == 0 || $tmp_d_hc_s['avg_level'] == 0 || $tmp_d_hc_s['end_level'] == 0) {
             $tmp_d_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-dh"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_m_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-monk"), true);
         while ($tmp_m_hc_s['top_level'] == 0 || $tmp_m_hc_s['avg_level'] == 0 || $tmp_m_hc_s['end_level'] == 0) {
             $tmp_m_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-monk"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++;break; }
         }
-
+        $err_value = 0;
         $tmp_wd_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-wd"), true);
         while ($tmp_wd_hc_s['top_level'] == 0 || $tmp_wd_hc_s['avg_level'] == 0 || $tmp_wd_hc_s['end_level'] == 0) {
             $tmp_wd_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-wd"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_wz_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-wizard"), true);
         while ($tmp_wz_hc_s['top_level'] == 0 || $tmp_wz_hc_s['avg_level'] == 0 || $tmp_wz_hc_s['end_level'] == 0) {
             $tmp_wz_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-wizard"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        
         $barbarian_top_hc_season = $tmp_b_hc_s['top_level'];    $barbarian_avg_hc_season = $tmp_b_hc_s['avg_level'];    $barbarian_end_hc_season = $tmp_b_hc_s['end_level'];
         $crusader_top_hc_season = $tmp_c_hc_s['top_level'];     $crusader_avg_hc_season = $tmp_c_hc_s['avg_level'];     $crusader_end_hc_season = $tmp_c_hc_s['end_level'];
         $dh_top_hc_season = $tmp_d_hc_s['top_level'];           $dh_avg_hc_season = $tmp_d_hc_s['avg_level'];           $dh_end_hc_season = $tmp_d_hc_s['end_level'];
@@ -85,7 +79,7 @@
                       '$barbarian_avg_hc_season', '$crusader_avg_hc_season', '$dh_avg_hc_season', '$monk_avg_hc_season', '$wd_avg_hc_season', '$wizard_avg_hc_season') ";
 
         db_query($query);
-
+        
         $file = "../../season_01/eu/hc_season/";
 
         file_put_contents($file . "barbarian/barbarian.data", json_encode($tmp_b_hc_s));
@@ -95,46 +89,45 @@
         file_put_contents($file . "wd/wd.data",               json_encode($tmp_wd_hc_s));
         file_put_contents($file . "wizard/wizard.data",       json_encode($tmp_wz_hc_s));
 
-        $log = "        - hardcore season uploaded. Errors: " . $err_value . "\n";
-        echo $log . "<br>";
-        file_put_contents($log_file, $log, FILE_APPEND | LOCK_EX);
-        $err_value = 0;
-
+        world_upload_log("        - hardcore season uploaded. Errors: " . $total_err_value . "/6\n");
+        $total_err_value = 0;
+        
         /* hc non season */
+        $err_value = 0;
         $tmp_b_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-barbarian"), true);
         while ($tmp_b_hc_ns['top_level'] == 0 || $tmp_b_hc_ns['avg_level'] == 0 || $tmp_b_hc_ns['end_level'] == 0) {
             $tmp_b_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-barbarian"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_c_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-crusader"), true);
         while ($tmp_c_hc_ns['top_level'] == 0 || $tmp_c_hc_ns['avg_level'] == 0 || $tmp_c_hc_ns['end_level'] == 0) {
             $tmp_c_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-crusader"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_d_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-dh"), true);
         while ($tmp_d_hc_ns['top_level'] == 0 || $tmp_d_hc_ns['avg_level'] == 0 || $tmp_d_hc_ns['end_level'] == 0) {
             $tmp_d_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-dh"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_m_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-monk"), true);
         while ($tmp_m_hc_ns['top_level'] == 0 || $tmp_m_hc_ns['avg_level'] == 0 || $tmp_m_hc_ns['end_level'] == 0) {
             $tmp_m_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-monk"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_wd_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-wd"), true);
         while ($tmp_wd_hc_ns['top_level'] == 0 || $tmp_wd_hc_ns['avg_level'] == 0 || $tmp_wd_hc_ns['end_level'] == 0) {
             $tmp_wd_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-wd"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_wz_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-wizard"), true);
         while ($tmp_wz_hc_ns['top_level'] == 0 || $tmp_wz_hc_ns['avg_level'] == 0 || $tmp_wz_hc_ns['end_level'] == 0) {
             $tmp_wz_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-wizard"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
 
         $barbarian_top_hc_non_season = $tmp_b_hc_ns['top_level'];   $barbarian_avg_hc_non_season = $tmp_b_hc_ns['avg_level'];   $barbarian_end_hc_non_season = $tmp_b_hc_ns['end_level'];
@@ -166,46 +159,45 @@
         file_put_contents($file . "wd/wd.data",                 json_encode($tmp_wd_hc_ns));
         file_put_contents($file . "wizard/wizard.data",         json_encode($tmp_wz_hc_ns));
 
-        $log = "        - hardcore non-season uploaded. Errors: " . $err_value . "\n";
-        echo $log . "<br>";
-        file_put_contents($log_file, $log, FILE_APPEND | LOCK_EX);
-        $err_value = 0;
+        world_upload_log("        - hardcore non-season uploaded. Errors: " . $total_err_value . "/6\n");
+        $total_err_value = 0;
 
         /* sc season */
+        $err_value = 0;
         $tmp_b_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-barbarian"), true);
         while ($tmp_b_sc_s['top_level'] == 0 || $tmp_b_sc_s['avg_level'] == 0 || $tmp_b_sc_s['end_level'] == 0) {
             $tmp_b_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-barbarian"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_c_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-crusader"), true);
         while ($tmp_c_sc_s['top_level'] == 0 || $tmp_c_sc_s['avg_level'] == 0 || $tmp_c_sc_s['end_level'] == 0) {
             $tmp_c_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-crusader"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_d_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-dh"), true);
         while ($tmp_d_sc_s['top_level'] == 0 || $tmp_d_sc_s['avg_level'] == 0 || $tmp_d_sc_s['end_level'] == 0) {
             $tmp_d_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-dh"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_m_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-monk"), true);
         while ($tmp_m_sc_s['top_level'] == 0 || $tmp_m_sc_s['avg_level'] == 0 || $tmp_m_sc_s['end_level'] == 0) {
             $tmp_m_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-monk"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_wd_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-wd"), true);
         while ($tmp_wd_sc_s['top_level'] == 0 || $tmp_wd_sc_s['avg_level'] == 0 || $tmp_wd_sc_s['end_level'] == 0) {
             $tmp_wd_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-wd"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_wz_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-wizard"), true);
         while ($tmp_wz_sc_s['top_level'] == 0 || $tmp_wz_sc_s['avg_level'] == 0 || $tmp_wz_sc_s['end_level'] == 0) {
             $tmp_wz_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-wizard"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
 
         $barbarian_top_sc_season = $tmp_b_sc_s['top_level'];    $barbarian_avg_sc_season = $tmp_b_sc_s['avg_level'];    $barbarian_end_sc_season = $tmp_b_sc_s['end_level'];
@@ -237,46 +229,45 @@
         file_put_contents($file . "wd/wd.data",                 json_encode($tmp_wd_sc_s));
         file_put_contents($file . "wizard/wizard.data",         json_encode($tmp_wz_sc_s));
 
-        $log = "        - softcore season uploaded. Errors: " . $err_value . "\n";
-        echo $log . "<br>";
-        file_put_contents($log_file, $log, FILE_APPEND | LOCK_EX);
-        $err_value = 0;
+        world_upload_log("        - softcore season uploaded. Errors: " . $total_err_value . "/6\n");
+        $total_err_value = 0;
 
         /* sc non season */
+        $err_value = 0;
         $tmp_b_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-barbarian"), true);
         while ($tmp_b_sc_ns['top_level'] == 0 || $tmp_b_sc_ns['avg_level'] == 0 || $tmp_b_sc_ns['end_level'] == 0) {
             $tmp_b_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-barbarian"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_c_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-crusader"), true);
         while ($tmp_c_sc_ns['top_level'] == 0 || $tmp_c_sc_ns['avg_level'] == 0 || $tmp_c_sc_ns['end_level'] == 0) {
             $tmp_c_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-crusader"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_d_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-dh"), true);
         while ($tmp_d_sc_ns['top_level'] == 0 || $tmp_d_sc_ns['avg_level'] == 0 || $tmp_d_sc_ns['end_level'] == 0) {
             $tmp_d_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-dh"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_m_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-monk"), true);
         while ($tmp_m_sc_ns['top_level'] == 0 || $tmp_m_sc_ns['avg_level'] == 0 || $tmp_m_sc_ns['end_level'] == 0) {
             $tmp_m_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-monk"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_wd_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-wd"), true);
         while ($tmp_wd_sc_ns['top_level'] == 0 || $tmp_wd_sc_ns['avg_level'] == 0 || $tmp_wd_sc_ns['end_level'] == 0) {
             $tmp_wd_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-wd"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_wz_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-wizard"), true);
         while ($tmp_wz_sc_ns['top_level'] == 0 || $tmp_wz_sc_ns['avg_level'] == 0 || $tmp_wz_sc_ns['end_level'] == 0) {
             $tmp_wz_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-wizard"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
 
         $barbarian_top_sc_non_season = $tmp_b_sc_ns['top_level'];   $barbarian_avg_sc_non_season = $tmp_b_sc_ns['avg_level'];   $barbarian_end_sc_non_season = $tmp_b_sc_ns['end_level'];
@@ -308,28 +299,28 @@
         file_put_contents($file . "wd/wd.data",                 json_encode($tmp_wd_sc_ns));
         file_put_contents($file . "wizard/wizard.data",         json_encode($tmp_wz_sc_ns));
 
-        $log = "        - softcore non-season uploaded. Errors: " . $err_value . "\n";
-        echo $log . "<br>";
-        file_put_contents($log_file, $log, FILE_APPEND | LOCK_EX);
-
+        world_upload_log("        - softcore non-season uploaded. Errors: " . $total_err_value . "/6\n");
+        $total_err_value = 0;
+        
         /* UPLOAD TEAM DATA */
         /* team hc season */
+        $err_value = 0;
         $tmp_t2_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-team-2"), true);
         while ($tmp_t2_hc_s['top_level'] == 0 || $tmp_t2_hc_s['avg_level'] == 0 || $tmp_t2_hc_s['end_level'] == 0) {
             $tmp_t2_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-team-2"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_t3_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-team-3"), true);
         while ($tmp_t3_hc_s['top_level'] == 0 || $tmp_t3_hc_s['avg_level'] == 0 || $tmp_t3_hc_s['end_level'] == 0) {
             $tmp_t3_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-team-3"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_t4_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-team-4"), true);
         while ($tmp_t4_hc_s['top_level'] == 0 || $tmp_t4_hc_s['avg_level'] == 0 || $tmp_t4_hc_s['end_level'] == 0) {
             $tmp_t4_hc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-hardcore-team-4"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
 
         $query = "INSERT INTO eu_hardcore_season_team (
@@ -351,28 +342,27 @@
         file_put_contents($file . "team_3/team_3.data", json_encode($tmp_t3_hc_s));
         file_put_contents($file . "team_4/team_4.data", json_encode($tmp_t4_hc_s));
 
-        $log = "        - hardcore season team uploaded. Errors: " . $err_value . "\n";
-        echo $log . "<br>";
-        file_put_contents($log_file, $log, FILE_APPEND | LOCK_EX);
-        $err_value = 0;
+        world_upload_log("        - hardcore season team uploaded. Errors: " . $total_err_value . "/6\n");
+        $total_err_value = 0;
 
         /* team hc non season */
+        $err_value = 0;
         $tmp_t2_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-team-2"), true);
         while ($tmp_t2_hc_ns['top_level'] == 0 || $tmp_t2_hc_ns['avg_level'] == 0 || $tmp_t2_hc_ns['end_level'] == 0) {
             $tmp_t2_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-team-2"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_t3_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-team-3"), true);
         while ($tmp_t3_hc_ns['top_level'] == 0 || $tmp_t3_hc_ns['avg_level'] == 0 || $tmp_t3_hc_ns['end_level'] == 0) {
             $tmp_t3_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-team-3"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_t4_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-team-4"), true);
         while ($tmp_t4_hc_ns['top_level'] == 0 || $tmp_t4_hc_ns['avg_level'] == 0 || $tmp_t4_hc_ns['end_level'] == 0) {
             $tmp_t4_hc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-hardcore-team-4"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
 
         $query = "INSERT INTO eu_hardcore_non_season_team (
@@ -394,28 +384,27 @@
         file_put_contents($file . "team_3/team_3.data", json_encode($tmp_t3_hc_ns));
         file_put_contents($file . "team_4/team_4.data", json_encode($tmp_t4_hc_ns));
 
-        $log = "        - hardcore non-season team uploaded. Errors: " . $err_value . "\n";
-        echo $log . "<br>";
-        file_put_contents($log_file, $log, FILE_APPEND | LOCK_EX);
-        $err_value = 0;
+        world_upload_log("        - hardcore non-season team uploaded. Errors: " . $total_err_value . "/6\n");
+        $total_err_value = 0;
 
         /* team sc season */
+        $err_value = 0;
         $tmp_t2_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-team-2"), true);
         while ($tmp_t2_sc_s['top_level'] == 0 || $tmp_t2_sc_s['avg_level'] == 0 || $tmp_t2_sc_s['end_level'] == 0) {
             $tmp_t2_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-team-2"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_t3_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-team-3"), true);
         while ($tmp_t3_sc_s['top_level'] == 0 || $tmp_t3_sc_s['avg_level'] == 0 || $tmp_t3_sc_s['end_level'] == 0) {
             $tmp_t3_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-team-3"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_t4_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-team-4"), true);
         while ($tmp_t4_sc_s['top_level'] == 0 || $tmp_t4_sc_s['avg_level'] == 0 || $tmp_t4_sc_s['end_level'] == 0) {
             $tmp_t4_sc_s = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/season/1/rift-team-4"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
 
         $query = "INSERT INTO eu_softcore_season_team (
@@ -437,28 +426,27 @@
         file_put_contents($file . "team_3/team_3.data", json_encode($tmp_t3_sc_s));
         file_put_contents($file . "team_4/team_4.data", json_encode($tmp_t4_sc_s));
 
-        $log = "        - softcore season team uploaded. Errors: " . $err_value . "\n";
-        echo $log . "<br>";
-        file_put_contents($log_file, $log, FILE_APPEND | LOCK_EX);
-        $err_value = 0;
+        world_upload_log("        - softcore season team uploaded. Errors: " . $total_err_value . "/6\n");
+        $total_err_value = 0;
 
         /* team sc non season */
+        $err_value = 0;
         $tmp_t2_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-team-2"), true);
         while ($tmp_t2_sc_ns['top_level'] == 0 || $tmp_t2_sc_ns['avg_level'] == 0 || $tmp_t2_sc_ns['end_level'] == 0) {
             $tmp_t2_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-team-2"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_t3_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-team-3"), true);
         while ($tmp_t3_sc_ns['top_level'] == 0 || $tmp_t3_sc_ns['avg_level'] == 0 || $tmp_t3_sc_ns['end_level'] == 0) {
             $tmp_t3_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-team-3"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
-
+        $err_value = 0;
         $tmp_t4_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-team-4"), true);
         while ($tmp_t4_sc_ns['top_level'] == 0 || $tmp_t4_sc_ns['avg_level'] == 0 || $tmp_t4_sc_ns['end_level'] == 0) {
             $tmp_t4_sc_ns = json_decode(get_stat_json("http://eu.battle.net/d3/en/rankings/era/1/rift-team-4"), true);
-            $err_value++;
+            if ($err_value++ > 5) { $total_err_value++; break; }
         }
 
         $query = "INSERT INTO eu_softcore_non_season_team (
@@ -480,13 +468,9 @@
         file_put_contents($file . "team_3/team_3.data", json_encode($tmp_t3_sc_ns));
         file_put_contents($file . "team_4/team_4.data", json_encode($tmp_t4_sc_ns));
 
-        $log = "        - softcore non-season team uploaded. Errors: " . $err_value . "\n";
-        echo $log . "<br>";
-        file_put_contents($log_file, $log, FILE_APPEND | LOCK_EX);
-
-        $log = "        Uploading of EU statistics done.\n";
-        file_put_contents($log_file, $log, FILE_APPEND | LOCK_EX);
-
-        echo $log . "<br>";
+        world_upload_log("        - softcore non-season team uploaded. Errors: " . $total_err_value . "/6\n");
+        world_upload_log("        Uploading of EU statistics done.\n");
+        
     }
+
 ?>
